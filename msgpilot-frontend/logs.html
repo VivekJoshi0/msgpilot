@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Batch Logs - MsgPilot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .status-success {
+      color: #22c55e;
+      font-weight: bold;
+    }
+
+    .status-failed {
+      color: #ef4444;
+      font-weight: bold;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+  </style>
+</head>
+
+<body class="text-white px-4 py-8 min-h-screen relative bg-gradient-to-b from-gray-900 to-black">
+
+  <!-- Back to Home Button -->
+  <div class="absolute top-6 right-6 z-20">
+    <a href="send.html"
+      class="bg-green-600 hover:bg-green-700 transition-all text-white font-semibold py-2 px-4 rounded-xl shadow-lg flex items-center gap-2">
+      🏠 Home
+    </a>
+  </div>
+
+  <div class="max-w-7xl mx-auto">
+    <h2 class="text-4xl font-bold text-center text-green-400 mb-10 drop-shadow-md">📦 Log History</h2>
+
+    <div class="overflow-x-auto rounded-2xl glass shadow-xl p-6">
+      <table class="min-w-full text-sm text-left">
+        <thead class="uppercase text-xs text-gray-300 border-b border-gray-600">
+          <tr>
+            <th class="px-4 py-3">Batch ID</th>
+            <th class="px-4 py-3">Date</th>
+            <th class="px-4 py-3 text-center">Total</th>
+            <th class="px-4 py-3 text-center">Success</th>
+            <th class="px-4 py-3 text-center">Failed</th>
+            <th class="px-4 py-3 text-center">Duplicates</th>
+            <th class="px-4 py-3 text-center">Cancelled</th>
+            <th class="px-4 py-3 text-center">Expiry</th>
+            <th class="px-4 py-3 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="logTableBody" class="divide-y divide-gray-700">
+          <!-- Batch summaries will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="utils/download.js"></script>
+  <script>
+    function formatExpiry(expiryString) {
+      if (!expiryString || expiryString.toLowerCase() === "expired") {
+        return "Expired";
+      }
+
+      const totalMinutes = parseInt(expiryString);
+      if (isNaN(totalMinutes)) return expiryString;
+
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+
+      return `${hours}h ${minutes}m`;
+    }
+
+    async function fetchLogs() {
+      const tbody = document.getElementById('logTableBody');
+      tbody.innerHTML = '';
+
+      try {
+        const res = await fetch('http://localhost:5001/api/message/logs', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        });
+
+        const data = await res.json();
+
+        if (!data.batches || data.batches.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-gray-400">No batches found.</td></tr>`;
+          return;
+        }
+
+        for (const batch of data.batches) {
+          const tr = document.createElement('tr');
+
+          const readableDate = new Date(batch.timestamp).toLocaleString();
+
+          tr.innerHTML = `
+            <td class="px-4 py-2 font-medium text-green-300">${batch.batchId}</td>
+            <td class="px-4 py-2 text-sm text-gray-300">${readableDate}</td>
+            <td class="px-4 py-2 text-center">${batch.total}</td>
+            <td class="px-4 py-2 status-success text-center">${batch.success}</td>
+            <td class="px-4 py-2 status-failed text-center">${batch.failed}</td>
+            <td class="px-4 py-2 text-center text-yellow-300 font-medium">${batch.duplicates}</td>
+            <td class="px-4 py-2 text-center text-orange-400 font-medium">${batch.cancelled}</td>
+            <td class="px-4 py-2 text-center">${formatExpiry(batch.expiresIn)}</td>
+            <td class="px-4 py-2 text-center">
+              <button
+                class="bg-green-600 hover:bg-green-700 transition-all px-4 py-1 rounded-lg text-white text-xs shadow-md"
+                onclick="downloadBatch('${batch.batchId}')"
+              >⬇ Download</button>
+            </td>
+          `;
+
+          tbody.appendChild(tr);
+        }
+
+      } catch (err) {
+        console.error('Failed to fetch logs:', err);
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-red-400">Failed to load logs.</td></tr>`;
+      }
+    }
+
+    fetchLogs();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Dashboard - MsgPilot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+            border-color: #10b981 !important;
+        }
+
+        .glass {
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .coming-soon {
+            animation: pulse 2s infinite;
+        }
+
+        .loader svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .loader svg circle {
+            fill: none;
+            stroke-width: 6;
+            stroke-linejoin: round;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .path-bg {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+
+        .path-loader {
+            stroke: #10b981;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 75;
+            animation: dash-move 1.5s ease-in-out infinite;
+        }
+
+        @keyframes dash-move {
+            0% {
+                stroke-dashoffset: 283;
+            }
+
+            50% {
+                stroke-dashoffset: 75;
+            }
+
+            100% {
+                stroke-dashoffset: 283;
+            }
+        }
+    </style>
+</head>
+
+<body
+    class="text-white min-h-screen px-4 py-12 flex items-center justify-center bg-gradient-to-b from-gray-900 to-black">
+    <div class="glass rounded-3xl shadow-2xl p-10 w-full max-w-6xl fade-in-up">
+        <h1 class="text-4xl font-bold mb-10 text-center text-green-400">MsgPilot Dashboard</h1>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- WhatsApp Sender Card -->
+            <div id="whatsappCard"
+                class="card-hover glass p-6 rounded-2xl cursor-pointer border border-green-400 hover:border-green-500">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-green-400">WhatsApp Sender</h2>
+                    <i class="fas fa-paper-plane text-green-400 text-2xl"></i>
+                </div>
+                <p class="text-gray-300 text-sm">Send WhatsApp messages via connected device. Requires one-time QR scan.
+                </p>
+            </div>
+
+            <!-- Email Sender -->
+            <div
+                class="card-hover glass p-6 rounded-2xl border border-gray-700 opacity-70 cursor-not-allowed coming-soon">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-gray-400">Email Sender</h2>
+                    <i class="fas fa-envelope text-gray-400 text-2xl"></i>
+                </div>
+                <p class="text-gray-400 text-sm">Coming soon...</p>
+            </div>
+
+            <!-- SMS Gateway -->
+            <div
+                class="card-hover glass p-6 rounded-2xl border border-gray-700 opacity-70 cursor-not-allowed coming-soon">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-gray-400">SMS Gateway</h2>
+                    <i class="fas fa-sms text-gray-400 text-2xl"></i>
+                </div>
+                <p class="text-gray-400 text-sm">Coming soon...</p>
+            </div>
+
+            <!-- Contact Manager -->
+            <div
+                class="card-hover glass p-6 rounded-2xl border border-gray-700 opacity-70 cursor-not-allowed coming-soon">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-gray-400">Contact Manager</h2>
+                    <i class="fas fa-address-book text-gray-400 text-2xl"></i>
+                </div>
+                <p class="text-gray-400 text-sm">Coming soon...</p>
+            </div>
+
+            <!-- Campaign Scheduler -->
+            <div
+                class="card-hover glass p-6 rounded-2xl border border-gray-700 opacity-70 cursor-not-allowed coming-soon">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-gray-400">Campaign Scheduler</h2>
+                    <i class="fas fa-calendar-alt text-gray-400 text-2xl"></i>
+                </div>
+                <p class="text-gray-400 text-sm">Coming soon...</p>
+            </div>
+
+            <!-- Analytics -->
+            <div
+                class="card-hover glass p-6 rounded-2xl border border-gray-700 opacity-70 cursor-not-allowed coming-soon">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-semibold text-gray-400">Analytics</h2>
+                    <i class="fas fa-chart-line text-gray-400 text-2xl"></i>
+                </div>
+                <p class="text-gray-400 text-sm">Coming soon...</p>
+            </div>
+        </div>
+
+        <p id="statusMsg" class="text-center text-sm mt-6 text-red-400 hidden">Something went wrong initializing
+            WhatsApp</p>
+    </div>
+    <!-- Loader Modal -->
+    <div id="loaderModal" class="fixed inset-0 modal-bg flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-900 rounded-2xl p-10 w-full max-w-md text-center text-white shadow-2xl relative fade-slide">
+            <!-- Circular SVG Loader -->
+            <div class="loader w-20 h-20 mx-auto mb-6 relative" id="circularLoader">
+                <svg viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" class="path-bg" />
+                    <circle cx="50" cy="50" r="45" class="path-loader" />
+                </svg>
+            </div>
+
+            <div id="loaderStatus" class="text-xl font-semibold mb-4 loader-dots">Initializing</div>
+            <img id="qrImage" class="mx-auto w-56 h-56 hidden rounded-lg border-2 border-green-500 mt-4 fade-slide" />
+            <button onclick="closeModal()"
+                class="absolute top-2 right-4 text-gray-400 hover:text-white text-2xl">&times;</button>
+        </div>
+    </div>
+
+    <!-- WhatsApp Init Script -->
+    <script>
+        const whatsappCard = document.getElementById('whatsappCard');
+        const statusMsg = document.getElementById('statusMsg');
+
+        whatsappCard.addEventListener('click', async () => {
+            whatsappCard.classList.add('opacity-50', 'pointer-events-none');
+            statusMsg.classList.add('hidden');
+            whatsappCard.querySelector('p').textContent = 'Initializing... Please wait ⏳';
+
+            try {
+                const res = await fetch('http://localhost:5001/api/whatsapp/init', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+                    }
+                });
+                if (!res.ok) throw new Error('Init failed');
+                console.log('WhatsApp client initialization triggered successfully!');
+            } catch (err) {
+                console.error(err);
+                showAlert('Failed to initialize WhatsApp', 'error');
+                statusMsg.classList.remove('hidden');
+                whatsappCard.classList.remove('opacity-50', 'pointer-events-none');
+                whatsappCard.querySelector('p').textContent = 'Send WhatsApp messages via connected device. Requires one-time QR scan.';
+            }
+        });
+
+        const showAlert = (message, type = 'error') => {
+            const alert = document.createElement('div');
+            alert.className = `fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg text-white z-[9999] transition-all duration-500 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+            alert.innerText = message;
+            document.body.appendChild(alert);
+
+            setTimeout(() => {
+                alert.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => alert.remove(), 500);
+            }, 3000);
+        };
+    </script>
+
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script>
+        const socket = io('http://localhost:5001', {
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+        });
+
+        const getUserIdFromSession = () => {
+            const token = localStorage.getItem('authToken');
+            return token ? JSON.parse(atob(token.split('.')[1])).id : 'demoUser';
+        };
+
+        const userId = getUserIdFromSession();
+        console.log('Joining room with userId:', userId);
+
+        const loaderModal = document.getElementById('loaderModal');
+        const loaderStatus = document.getElementById('loaderStatus');
+        const qrImage = document.getElementById('qrImage');
+
+        function showModal(message = 'Initializing...') {
+            loaderStatus.textContent = message;
+            loaderStatus.classList.add('loader-dots');
+            loaderModal.classList.remove('hidden');
+            qrImage.classList.add('hidden');
+            document.getElementById('circularLoader').style.display = 'block';
+        }
+
+        function showQR(qrData) {
+            loaderStatus.classList.remove('loader-dots');
+            loaderStatus.textContent = 'Scan the QR Code to connect your device 📱';
+            qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qrData)}&size=300x300`;
+            qrImage.classList.remove('hidden');
+            document.getElementById('circularLoader').style.display = 'none';
+        }
+
+        async function closeModal() {
+            loaderModal.classList.add('hidden');
+
+            // Cancel init session
+            try {
+                await fetch('http://localhost:5001/api/whatsapp/cancel-init', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                console.log('🛑 Initialization cancelled.');
+            } catch (err) {
+                console.error('Failed to cancel initialization:', err);
+            }
+        }
+
+
+        socket.on('connect', () => {
+            console.log('🔌 Connected to Socket.IO server');
+            socket.emit('join', userId);
+        });
+
+        socket.on('whatsapp:initializing', () => {
+            showModal('Initializing WhatsApp client...');
+        });
+
+        socket.on('whatsapp:connected', () => {
+            showModal('Whatsapp already logged in');
+            setTimeout(() => window.location.href = 'send.html', 2000);
+        });
+
+        socket.on('whatsapp:ready', () => {
+            showModal('WhatsApp client is ready');
+            setTimeout(() => window.location.href = 'send.html', 2000);
+        });
+
+        socket.on('whatsapp:error', (errMsg = 'Something went wrong') => {
+            showModal(`❌ ${errMsg}`);
+        });
+
+        socket.on('whatsapp:qr', (qrData) => {
+            showQR(qrData);
+        });
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,114 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Sending Progress</title>
+  <meta charset="UTF-8" />
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: rgba(13, 13, 43, 0.8);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .popup {
+      background: #1f2937;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.5);
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .progress-container {
+      width: 100%;
+      height: 18px;
+      background: #374151;
+      border-radius: 9999px;
+      overflow: hidden;
+      margin: 1.2rem 0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(to right, #22c55e, #16a34a);
+      width: 0%;
+      transition: width 0.3s ease-in-out;
+    }
+
+    .progress-text {
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    .cancel-btn {
+      background-color: #dc2626;
+      color: white;
+      padding: 0.5rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .cancel-btn:hover {
+      background-color: #b91c1c;
+    }
+  </style>
+</head>
+<body>
+  <div class="popup">
+    <h2 class="text-2xl font-semibold mb-2 text-white">🚀 Sending Messages</h2>
+    <div class="progress-container">
+      <div id="progressBar" class="progress-bar"></div>
+    </div>
+    <div id="progressText" class="progress-text text-white">Starting...</div>
+    <button onclick="cancelSending()" class="cancel-btn">Cancel</button>
+  </div>
+
+  <script>
+    const socket = io('http://localhost:5001');
+    let total = 0;
+
+    window.addEventListener('message', async (e) => {
+      const payload = e.data;
+      total = payload.numbers.length;
+
+      const res = await fetch('http://localhost:5001/api/message/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        },
+        body: JSON.stringify(payload)
+      });
+    });
+
+    socket.on('progress', ({ total, processed, success, failed }) => {
+      document.getElementById('progressText').innerText = 
+        `✅ ${success} | ❌ ${failed} | ⏳ ${total - processed} left`;
+      document.getElementById('progressBar').style.width = `${(processed / total) * 100}%`;
+    });
+
+    function cancelSending() {
+      socket.emit('cancel');
+      window.close();
+    }
+  </script>
+</body>
+</html> -->

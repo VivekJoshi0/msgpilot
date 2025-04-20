@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Send Message - MsgPilot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #0d0d2b;
+      overflow: hidden;
+    }
+
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 2s infinite ease-in-out;
+    }
+
+    @keyframes twinkle {
+
+      0%,
+      100% {
+        opacity: 0.2;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.5);
+      }
+    }
+
+    .stars-container {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      top: 0;
+      left: 0;
+    }
+
+    .form-container {
+      position: relative;
+      z-index: 10;
+      animation: fadeInUp 0.6s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .btn-send {
+      background: linear-gradient(to right, #22c55e, #16a34a);
+      transition: all 0.3s ease;
+      box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+    }
+
+    .btn-send:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.8);
+    }
+
+    .stat {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .stat .label {
+      font-size: 0.75rem;
+      color: #aaa;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    .stat .value {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #eee;
+    }
+  </style>
+</head>
+
+<body
+  class="text-white px-4 py-12 min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black">
+  <div id="navbarContainer" class="w-full fixed top-0 left-0 z-10"></div>
+  <div class="h-24"></div>
+  <div class="stars-container" id="starsContainer"></div>
+
+  <div class="max-w-3xl w-full form-container relative mt-10 animate-fade-in-up">
+    <h2 class="text-4xl font-bold text-center mb-10 text-green-400 tracking-wide">Send Message</h2>
+    <form
+      class="bg-gray-800/90 backdrop-blur-sm p-8 rounded-2xl shadow-[0_4px_20px_rgba(0,255,140,0.2)] space-y-6 transition-all duration-500 ease-in-out"
+      id="sendForm">
+
+      <!-- Phone Numbers -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300">Phone Numbers</label>
+        <div class="flex gap-px mt-1">
+          <select id="countryCode"
+            class="rounded-l-md w-25 p-3 bg-gray-900 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-300 ease-in-out">
+            <option value="+91" selected>🇮🇳 +91</option>
+            <option value="+1">🇺🇸 +1</option>
+            <option value="+44">🇬🇧 +44</option>
+            <option value="+971">🇦🇪 +971</option>
+          </select>
+
+          <input type="text" id="numbersInput" placeholder="Type or paste numbers"
+            class="rounded-r-md w-full p-3 bg-gray-900 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-300 ease-in-out"
+            required />
+        </div>
+        <div class="flex justify-end mt-1">
+          <button type="button" onclick="showPreviewModal()"
+            class="text-green-400 hover:text-green-300 transition hover:underline text-xs font-medium px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-green-400">
+            Preview Numbers
+          </button>
+        </div>
+      </div>
+
+      <!-- Message -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300">Message</label>
+        <textarea rows="4" id="messageInput" placeholder="Type your message here..."
+          class="mt-1 w-full p-3 rounded bg-gray-900 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-300 ease-in-out"
+          required></textarea>
+      </div>
+
+      <!-- Delay -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300">Delay (in seconds)</label>
+        <input type="number" id="delayInput" min="0" value="1"
+          class="mt-1 w-full p-3 rounded bg-gray-900 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-300 ease-in-out" />
+      </div>
+
+      <!-- Attachment -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300">Attachment (optional)</label>
+        <div class="relative group">
+          <input type="file" id="fileInput"
+            class="mt-1 w-full p-3 rounded bg-gray-900 text-white border border-gray-700 file:bg-green-500 file:text-white file:rounded file:px-4 file:py-2 file:border-0 file:cursor-pointer hover:file:bg-green-600 transition duration-300 ease-in-out" />
+          <span id="fileName" class="block mt-2 text-xs text-green-400 hidden">File selected</span>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="pt-4">
+        <button type="submit"
+          class="btn-send w-full flex items-center justify-center gap-2 font-semibold py-3 px-6 rounded text-white text-lg bg-green-500 hover:bg-green-600 transition-all duration-300 transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-green-400 active:scale-[0.98] shadow-md">
+          <span id="btnText">Send Message</span>
+          <svg id="rocketIcon" xmlns="http://www.w3.org/2000/svg" fill="none" class="w-5 h-5" viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 18l6-6-6-6M15 12H3" />
+          </svg>
+        </button>
+      </div>
+    </form>
+  </div>
+</body>
+
+
+<!-- Progress Modal -->
+<div id="progressModal"
+  class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-[100] hidden">
+  <div
+    class="bg-gray-900 p-8 md:p-10 rounded-3xl shadow-2xl w-full max-w-5xl text-center space-y-6 relative animate-fade-in">
+    <!-- Title -->
+    <h2 id="progressTitle" class="text-4xl font-bold text-green-400 transition-all duration-500">
+      Sending in Progress 🚀
+    </h2>
+
+    <!-- Progress Bar -->
+    <div class="w-full h-6 md:h-8 bg-gray-800 rounded-full overflow-hidden shadow-inner border border-green-400">
+      <div id="progressBar"
+        class="h-full bg-gradient-to-r from-green-400 via-lime-400 to-green-600 transition-all duration-700 ease-in-out w-0 rounded-full shadow-lg animate-pulse">
+      </div>
+    </div>
+
+    <!-- Status Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 text-sm text-left mt-4">
+      <div class="stat">
+        <span class="label">✅ Success</span>
+        <span id="successCount" class="value text-green-400">0</span>
+      </div>
+      <div class="stat">
+        <span class="label">❌ Failed</span>
+        <span id="failedCount" class="value text-red-400">2</span>
+      </div>
+      <div class="stat">
+        <span class="label">📄 Duplicates</span>
+        <span id="duplicateCount" class="value">0</span>
+      </div>
+      <div class="stat">
+        <span class="label">⏳ Pending</span>
+        <span id="pendingCount" class="value">4</span>
+      </div>
+      <div class="stat">
+        <span class="label">📬 Total</span>
+        <span id="totalCount" class="value">6</span>
+      </div>
+      <div class="stat">
+        <span class="label">📱 Current</span>
+        <span id="currentNumber" class="value">917060898836</span>
+      </div>
+      <div class="stat">
+        <span class="label">🕐 ETA</span>
+        <span id="etaTime" class="value">0m 12s left</span>
+      </div>
+      <div class="stat">
+        <span class="label">📊 Completed</span>
+        <span id="completionPercent" class="value">33.3%</span>
+      </div>
+    </div>
+
+
+    <!-- Message Preview -->
+    <div class="bg-gray-800 p-4 rounded-xl text-sm text-left text-white max-h-32 overflow-y-auto shadow-inner">
+      <strong class="text-green-300">Message Preview:</strong>
+      <p id="previewMessage" class="mt-1">Loading...</p>
+    </div>
+
+    <!-- Control Buttons -->
+    <div id="progressButtonContainer" class="flex flex-wrap justify-center gap-3 mt-4">
+      <button id="pauseBtn" onclick="togglePauseResume()"
+        class="bg-yellow-500 hover:bg-yellow-600 px-5 py-2 rounded-xl text-white font-semibold shadow-md transition">Pause</button>
+      <button id="resumeBtn" onclick="togglePauseResume()"
+        class="bg-green-600 hover:bg-green-700 px-5 py-2 rounded-xl text-white font-semibold hidden shadow-md transition">Resume</button>
+      <button id="cancelBtn" onclick="confirmCancel()"
+        class="bg-red-600 hover:bg-red-700 px-5 py-2 rounded-xl text-white font-semibold shadow-md transition">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Cancel Modal -->
+<div id="confirmCancelModal"
+  class="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-[110] hidden">
+  <div class="bg-gray-900 p-6 md:p-8 rounded-3xl shadow-2xl w-full max-w-md text-center space-y-5 animate-fade-in">
+    <h2 class="text-2xl font-bold text-red-400">⚠️ Cancel Sending?</h2>
+    <p class="text-gray-300">Are you sure you want to cancel the sending process? This action cannot be undone.</p>
+    <div class="flex justify-center gap-4">
+      <button onclick="hideConfirmCancelModal()"
+        class="bg-gray-700 hover:bg-gray-600 px-5 py-2 rounded-xl text-white font-semibold shadow">Go
+        Back</button>
+      <button onclick="cancelSending()"
+        class="bg-red-600 hover:bg-red-700 px-5 py-2 rounded-xl text-white font-semibold shadow">Yes, Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script src="utils/download.js"></script>
+<script>
+  // 🌟 Stars Background
+  const container = document.getElementById('starsContainer');
+  for (let i = 0; i < 200; i++) {
+    const star = document.createElement('div');
+    star.classList.add('star');
+    star.style.top = `${Math.random() * 100}%`;
+    star.style.left = `${Math.random() * 100}%`;
+    star.style.animationDuration = `${1 + Math.random() * 2}s`;
+    container.appendChild(star);
+  }
+
+  function showPreviewModal() {
+    const input = document.getElementById('numbersInput');
+    const rawNumbers = input.value;
+
+    const numbers = rawNumbers
+      .split(/[\s,\/\n;|]+/) // Split on: space, comma, slash, newline, semicolon, or pipe
+      .map(n => n.trim())
+      .filter(n => n.length > 0);
+
+    const list = document.getElementById('numberList');
+    list.innerHTML = '';
+
+    if (numbers.length === 0) {
+      list.innerHTML = '<p class="text-gray-400">No valid numbers found.</p>';
+    } else {
+      numbers.forEach(num => {
+        const div = document.createElement('div');
+        div.textContent = num;
+        list.appendChild(div);
+      });
+    }
+
+    document.getElementById('previewModal').classList.remove('hidden');
+  }
+
+  function closePreviewModal() {
+    document.getElementById('previewModal').classList.add('hidden');
+  }
+
+  function confirmCancel() {
+    document.getElementById("confirmCancelModal").classList.remove("hidden");
+  }
+
+  function hideConfirmCancelModal() {
+    document.getElementById("confirmCancelModal").classList.add("hidden");
+  }
+
+
+  const getUserIdFromSession = () => {
+    // Replace with actual logic to get user ID
+    const token = localStorage.getItem('authToken');
+    return token ? JSON.parse(atob(token.split('.')[1])).id : 'demoUser';
+  }
+
+  const showAlert = (message, type = 'error') => {
+    const alert = document.createElement('div');
+    alert.className = `fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg text-white z-[9999] transition-all duration-500 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'
+      }`;
+    alert.innerText = message;
+    document.body.appendChild(alert);
+
+    // Auto-dismiss after 3 seconds
+    setTimeout(() => {
+      alert.classList.add('opacity-0', 'translate-y-2');
+      setTimeout(() => alert.remove(), 500);
+    }, 3000);
+  };
+
+  let batchId = null;
+
+  document.getElementById('sendForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const countryCode = document.getElementById('countryCode').value.replace('+', '');
+    const rawNumbers = document.getElementById('numbersInput').value;
+    const message = document.getElementById('messageInput').value.trim();
+    const delay = parseInt(document.getElementById('delayInput').value) || 0;
+
+    const numbers = rawNumbers
+      .split(/[\s,\/\n;|]+/) // Split on: space, comma, slash, newline, semicolon, or pipe
+      .map(n => n.trim())
+      .filter(n => n.length > 0);
+
+    // Log the numbers to check
+    console.log('Formatted numbers from frontend:', numbers);
+
+    if (!numbers.length || !message) return showAlert('Please enter valid numbers and a message.');
+
+    document.getElementById('progressBar').style.width = `0%`;
+    document.getElementById('successCount').innerText = 0;
+    document.getElementById('failedCount').innerText = 0;
+    document.getElementById('pendingCount').innerText = 0;
+    document.getElementById('totalCount').innerText = 0;
+    document.getElementById('etaTime').innerText = '';
+
+    // Reset Pause, Resume, and Cancel button states
+    document.getElementById('pauseBtn').classList.remove('hidden');
+    document.getElementById('pauseBtn').disabled = false;
+    document.getElementById('resumeBtn').classList.add('hidden');
+    document.getElementById('cancelBtn').classList.remove('hidden');
+
+    document.getElementById('btnText').textContent = "Sending...";
+    document.getElementById('rocketIcon').classList.add('animate-bounce');
+    document.getElementById('progressModal').classList.remove('hidden');
+    document.getElementById('previewMessage').innerText = message;
+
+    try {
+      const formData = new FormData();
+      const normalizedNumbers = Array.isArray(numbers) ? numbers : [numbers];
+
+      normalizedNumbers.forEach(num => {
+        formData.append('numbers', num);
+      });
+      formData.append('message', message);
+      formData.append('delayMs', delay);
+      formData.append('countryCode', countryCode);
+
+      // file support
+      if (fileInput.files.length > 0) {
+        formData.append('file', fileInput.files[0]);
+      }
+
+      const res = await fetch('http://localhost:5001/api/message/send', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}` // ✅ no Content-Type here!
+        },
+        body: formData,
+      });
+
+      // Log the formData being sent
+      console.log('FormData being sent:', formData);
+      const data = await res.json();
+
+      if (res.status === 440 || data.msg?.includes('Session expired')) {
+        localStorage.setItem('sessionAlert', 'Session expired');
+        window.location.href = 'dashboard.html'; // redirect instantly
+        return;
+      }
+
+      batchId = data.batchId;
+      if (!res.ok || !data.status) showAlert(data.msg || 'Sending failed');
+      else showAlert(data.msg, 'success');
+
+    } catch (err) {
+      console.error(err);
+      showAlert('Sending failed. Try again.');
+    } finally {
+      document.getElementById('btnText').textContent = "Send Message";
+      document.getElementById('rocketIcon').classList.remove('animate-bounce');
+    }
+  });
+
+  fetch('navbar.html').then(res => res.text()).then(html => {
+    document.getElementById('navbarContainer').innerHTML = html;
+  });
+
+  async function handleLogout() {
+  try {
+    const userId = getUserIdFromSession(); // already implemented
+    if (!userId) return showAlert('User ID not found.', 'error');
+
+    const res = await fetch(`http://localhost:5001/api/whatsapp/logout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+      },
+      body: JSON.stringify({ userId })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error(data);
+      return showAlert(data.msg || 'Logout failed.', 'error');
+    }
+
+    // 🧹 Clear localStorage and redirect
+    localStorage.removeItem('authToken');
+    showAlert('Logging out...', 'error');
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 1000);
+  } catch (err) {
+    console.error(err);
+    showAlert('Something went wrong during logout.', 'error');
+  }
+}
+
+
+  function togglePauseResume() {
+    const isPaused = document.getElementById('pauseBtn').classList.contains('hidden');
+
+    if (isPaused) {
+      // Resuming
+      socket.emit('resume');
+      showAlert('Resumed message sending.', 'success');
+
+      document.getElementById('pauseBtn').classList.remove('hidden');
+      document.getElementById('resumeBtn').classList.add('hidden');
+    } else {
+      // Pausing
+      socket.emit('pause');
+      showAlert('Paused message sending', 'error');
+
+      document.getElementById('pauseBtn').classList.add('hidden');
+      document.getElementById('resumeBtn').classList.remove('hidden');
+    }
+  }
+
+  function cancelSending() {
+    socket.emit('cancel');
+    document.getElementById('confirmCancelModal').classList.add('hidden');
+
+    // Hide pause/resume/cancel buttons
+    document.getElementById('pauseBtn').classList.add('hidden');
+    document.getElementById('resumeBtn').classList.add('hidden');
+    document.getElementById('cancelBtn').classList.add('hidden');
+
+    // Update status
+    document.getElementById('etaTime').innerText = 'Cancelled';
+
+    // Add Done and Download buttons if not already there
+    const buttonContainer = document.getElementById('progressButtonContainer');
+
+    if (!document.getElementById('doneBtn')) {
+      const doneBtn = document.createElement('button');
+      doneBtn.id = 'doneBtn';
+      doneBtn.classList.add(
+        'bg-green-600', 'hover:bg-green-700', 'px-4', 'py-2',
+        'rounded-lg', 'text-white', 'font-semibold', 'text-base'
+      );
+      doneBtn.textContent = 'Done';
+      doneBtn.onclick = () => {
+        resetFormAndUI();
+      };
+      buttonContainer.appendChild(doneBtn);
+    }
+
+    if (!document.getElementById('downloadBtn')) {
+      const downloadBtn = document.createElement('button');
+      downloadBtn.id = 'downloadBtn';
+      downloadBtn.classList.add(
+        'bg-blue-500', 'hover:bg-blue-600', 'px-3', 'py-1.5',
+        'rounded-lg', 'text-white', 'font-medium', 'text-sm'
+      );
+      downloadBtn.textContent = 'Download Report';
+      downloadBtn.onclick = () => {
+        if (!batchId) return showAlert("Batch ID not found. Cannot download report.");
+        downloadBatch(batchId);
+      };
+      buttonContainer.appendChild(downloadBtn);
+    }
+
+    // Show a notice
+    showAlert('Sending cancelled. You can still download the report.', 'error');
+  }
+
+
+
+  // ✅ CONNECT TO SOCKET.IO SERVER WITH RECONNECT OPTIONS
+  const socket = io('http://localhost:5001', {
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+  });
+  const userId = getUserIdFromSession();
+
+  socket.on('connect', () => {
+    console.log('🔌 Connected to Socket.IO server');
+    socket.emit('join', userId); // optional if you add join logic on backend
+  });
+
+  socket.on('disconnect', () => {
+    console.warn('⚠️ Disconnected from server');
+    showAlert('Disconnected from server. Trying to reconnect...');
+  });
+
+  // ✅ HANDLE PROGRESS EVENTS
+  socket.on('progress', (data) => {
+    const { processed = 0, success = 0, failed = 0, duplicate = 0, total = 0, currentNumber = 'N/A', fixedDelay = 0 } = data;
+    const pending = total - processed;
+    const progress = total > 0 ? (processed / total) * 100 : 0;
+
+    // Calculate ETA based on fixed delay and remaining messages
+    const addedDelay = parseInt(document.getElementById('delayInput').value) || 0;
+    const delayPerMessage = fixedDelay + addedDelay * 1000; // Delay per message
+    const etaMs = pending * delayPerMessage; // Total ETA in milliseconds
+
+    // Convert ETA from milliseconds to minutes and seconds
+    const etaSeconds = Math.ceil(etaMs / 1000);
+    const minutes = Math.floor(etaSeconds / 60);
+    const seconds = etaSeconds % 60;
+    const formattedETA = etaMs > 0 ? `${minutes}m ${seconds}s left` : 'Done';
+
+    document.getElementById('progressBar').style.width = `${progress}%`;
+    document.getElementById('successCount').innerText = success;
+    document.getElementById('failedCount').innerText = failed;
+    document.getElementById('duplicateCount').innerText = duplicate;
+    document.getElementById('pendingCount').innerText = pending;
+    document.getElementById('totalCount').innerText = total;
+    document.getElementById('currentNumber').innerText = currentNumber;
+    document.getElementById('etaTime').innerText = formattedETA;
+    document.getElementById('completionPercent').innerText = `${progress.toFixed(1)}%`;
+
+    if (processed >= total) {
+      document.getElementById('btnText').textContent = "Send Message";
+      document.getElementById('rocketIcon').classList.remove('animate-bounce');
+
+      // Hide Pause and Cancel buttons
+      document.getElementById('pauseBtn').classList.add('hidden');
+      document.getElementById('cancelBtn').classList.add('hidden');
+
+      // Create the Done button (same as before)
+      const doneBtn = document.createElement('button');
+      doneBtn.id = 'doneBtn';
+      doneBtn.classList.add(
+        'bg-green-600', 'hover:bg-green-700', 'px-4', 'py-2',
+        'rounded-lg', 'text-white', 'font-semibold', 'text-base'
+      );
+      doneBtn.textContent = 'Done';
+      doneBtn.onclick = () => {
+        resetFormAndUI();
+      };
+
+      // Create a smaller Download Report button
+      const downloadBtn = document.createElement('button');
+      downloadBtn.id = 'downloadBtn';
+      downloadBtn.classList.add(
+        'bg-blue-500', 'hover:bg-blue-600', 'px-3', 'py-1.5',
+        'rounded-lg', 'text-white', 'font-medium', 'text-sm'
+      );
+      downloadBtn.textContent = 'Download Report';
+
+      downloadBtn.onclick = () => {
+        if (!batchId) return showAlert("Batch ID not found. Cannot download report.");
+        downloadBatch(batchId); // ✅ From utils.js
+      };
+
+      // Append both buttons to the modal
+      const buttonContainer = document.getElementById('progressButtonContainer');
+      buttonContainer.appendChild(doneBtn);
+      buttonContainer.appendChild(downloadBtn);
+
+      // Show success alert
+      showAlert('✅ All messages sent!', 'success');
+    }
+  });
+
+  function resetFormAndUI() {
+    // document.getElementById('sendForm').reset();
+    document.getElementById('progressModal').classList.add('hidden');
+    document.getElementById('progressBar').style.width = '0%';
+    document.getElementById('successCount').innerText = 0;
+    document.getElementById('failedCount').innerText = 0;
+    document.getElementById('pendingCount').innerText = 0;
+    document.getElementById('totalCount').innerText = 0;
+    document.getElementById('etaTime').innerText = '';
+    document.getElementById('currentNumber').innerText = 'N/A';
+    document.getElementById('previewMessage').innerText = 'Loading...';
+
+    // Hide resume button, show pause
+    document.getElementById('pauseBtn').classList.remove('hidden');
+    document.getElementById('resumeBtn').classList.add('hidden');
+
+    // Hide any custom buttons added like "Done" or "Download"
+    const doneBtn = document.getElementById('doneBtn');
+    if (doneBtn) doneBtn.remove();
+
+    const downloadBtn = document.getElementById('downloadBtn');
+    if (downloadBtn) downloadBtn.remove();
+  }
+
+
+
+</script>
+<div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-gray-800 p-4 rounded-lg shadow-lg w-full max-w-sm relative">
+    <button onclick="closePreviewModal()" class="absolute top-2 right-3 text-white text-lg">&times;</button>
+    <h3 class="text-green-400 text-lg font-semibold mb-2">📱 Phone Numbers Preview</h3>
+    <div id="numberList" class="text-sm text-white max-h-60 overflow-y-auto space-y-1">
+      <!-- Parsed numbers will go here -->
+    </div>
+  </div>
+</div>
+</body>
+
+</html>

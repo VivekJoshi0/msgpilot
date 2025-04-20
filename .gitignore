@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+.DS_Store
+*.log
+msgpilot-backend/.wwebjs_auth/
+node_modules/

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Login - MsgPilot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .form-fade {
+      animation: fadeInUp 0.8s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .input-glow:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+    }
+
+    .button-glow:hover {
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.9);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black text-white px-4">
+
+  <div class="glass p-8 rounded-3xl shadow-2xl w-full max-w-md form-fade space-y-6">
+    <h2 class="text-3xl font-bold text-center text-green-400">🔐 Login to MsgPilot</h2>
+
+    <!-- Email Field -->
+    <div class="relative">
+      <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+        <i class="fas fa-envelope"></i>
+      </span>
+      <input
+        type="text"
+        id="username"
+        placeholder="Email"
+        class="w-full pl-10 p-3 rounded-xl bg-gray-800 border border-gray-700 input-glow placeholder-gray-400"
+        required />
+    </div>
+
+    <!-- Password Field -->
+    <div class="relative">
+      <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+        <i class="fas fa-lock"></i>
+      </span>
+      <input
+        type="password"
+        id="password"
+        placeholder="Password"
+        class="w-full pl-10 p-3 rounded-xl bg-gray-800 border border-gray-700 input-glow placeholder-gray-400"
+        required />
+    </div>
+
+    <!-- Login Button -->
+    <button
+      type="submit"
+      class="w-full py-3 bg-green-500 hover:bg-green-600 rounded-xl font-semibold transition duration-300 button-glow">
+      Login
+    </button>
+
+    <p class="text-center text-sm text-gray-400">
+      Don’t have an account?
+      <a href="signup.html" class="text-green-400 hover:underline">Sign up</a>
+    </p>
+  </div>
+
+  <script>
+    const showAlert = (message, type = 'error') => {
+      const alert = document.createElement('div');
+      alert.className = `fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg text-white z-[9999] transition-all duration-500 opacity-100 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+      alert.innerText = message;
+      document.body.appendChild(alert);
+  
+      setTimeout(() => {
+        alert.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => alert.remove(), 500);
+      }, 3000);
+    };
+  
+    document.querySelector('button').addEventListener('click', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+  
+      if (!username || !password) {
+        showAlert('Please fill in all fields!');
+        return;
+      }
+  
+      try {
+        const res = await fetch('http://localhost:5001/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+  
+        if (!res.ok) {
+          const error = await res.json();
+          showAlert(error.message || 'Invalid credentials');
+          return;
+        }
+  
+        const data = await res.json();
+        localStorage.setItem('authToken', data.token);
+          window.location.href = 'dashboard.html';
+      } catch (err) {
+        console.error('Login error:', err);
+        showAlert('Something went wrong! Please try again later.');
+      }
+    });
+  </script>
+</body>
+
+</html>
