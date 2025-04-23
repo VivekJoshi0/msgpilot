@@ -30,7 +30,7 @@ const initializeWhatsAppClient = async (userId, io) => {
 
     try {
         io.to(userId).emit('whatsapp:initializing'); 
-        const executablePath = puppeteer.executablePath();
+        const executablePath = '/usr/bin/chromium-browser'; 
 
         const client = new Client({
             authStrategy: new LocalAuth({ clientId: userId }), // 🔑 Isolate by userId
