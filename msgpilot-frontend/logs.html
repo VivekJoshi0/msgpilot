@@ -88,7 +88,7 @@
       tbody.innerHTML = '';
 
       try {
-        const res = await fetch('http://localhost:5001/api/message/logs', {
+        const res = await fetch('https://msgpilot-backend.onrender.com/api/message/logs', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
           }
