@@ -1,6 +1,6 @@
 const { getClient, isSessionActive } = require('../config/client');
 const delay = require('../utils/delay');
-const MessageLog = require('../models/messageLog');
+const MessageLog = require('../models/MessageLog');
 const { setPaused, isPaused, setCancelled, isCancelled, clearAll, clearCancel } = require('../utils/pauseManager');
 const { MessageMedia } = require('whatsapp-web.js');
 const moment = require('moment');
