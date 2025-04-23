@@ -193,7 +193,7 @@
             whatsappCard.querySelector('p').textContent = 'Initializing... Please wait ⏳';
 
             try {
-                const res = await fetch('http://localhost:5001/api/whatsapp/init', {
+                const res = await fetch('https://msgpilot-3.onrender.com/api/whatsapp/init', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -227,7 +227,7 @@
     <!-- Socket.IO -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script>
-        const socket = io('http://localhost:5001', {
+        const socket = io('https://msgpilot-3.onrender.com', {
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
         });
@@ -265,7 +265,7 @@
 
             // Cancel init session
             try {
-                await fetch('http://localhost:5001/api/whatsapp/cancel-init', {
+                await fetch('https://msgpilot-3.onrender.com/api/whatsapp/cancel-init', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
