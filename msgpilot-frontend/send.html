@@ -404,7 +404,7 @@
       }
 
       batchId = data.batchId;
-      if (!res.ok || !data.status) showAlert(data.msg || 'Sending failed');
+      if (!res.ok || !data.status) showAlert(data.msg || 'Sending failed')
       else showAlert(data.msg, 'success');
 
     } catch (err) {
@@ -430,8 +430,7 @@
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-      },
-      body: JSON.stringify({ userId })
+      }
     });
 
     const data = await res.json();

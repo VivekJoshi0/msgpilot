@@ -5,6 +5,7 @@ const { Server } = require('socket.io');
 const { setPaused, setCancelled } = require('./utils/pauseManager');
 
 
+
 const authRoutes = require('./routes/authRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const whatsappRoutes = require('./routes/whatsappRoutes');
@@ -33,12 +34,12 @@ app.use('/api/message', messageRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 
 io.on('connection', (socket) => {
-    console.log(`🔌 New socket connected: ${socket.id}`);
+    // console.log(`🔌 New socket connected: ${socket.id}`);
 
     socket.on('join', (userId) => {
         socket.join(userId);
         socket.userId = userId; // 🔥 This line is crucial
-        console.log(`🧑‍💻 Socket ${socket.id} joined room: ${userId}`);
+        // console.log(`🧑‍💻 Socket ${socket.id} joined room: ${userId}`);
     });
 
     socket.on('pause', () => {

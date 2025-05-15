@@ -1,4 +1,7 @@
-const { initializeWhatsAppClient, isSessionActive, cleanupClient } = require('../config/client');
+// controllers/whatsappController.js
+
+const { initializeWhatsAppClient, isSessionActive, cleanupClient } = require('../config/clientManager');
+const { addDisconnectingClient, removeDisconnectingClient, isDisconnecting } = require('../config/disconnectState');
 
 const initClient = async (req, res) => {
     const userId = req.user?.id;
@@ -7,6 +10,10 @@ const initClient = async (req, res) => {
 
     console.log(`✅ UserID: ${userId}`);
 
+    if (isDisconnecting(userId)) {
+        console.log(`⏭️ Skipping reconnect, logout in progress for user ${userId}`);
+        return res.status(409).json({ message: 'Logout in progress. Try again later.' });
+    }
 
     if (active) {
         console.log('✅ Already Session On');
@@ -15,6 +22,7 @@ const initClient = async (req, res) => {
     }
 
     try {
+        console.log('✅ Triggering Initialization');
         await initializeWhatsAppClient(userId, io);
         res.status(200).json({ message: 'WhatsApp Client initialization triggered' });
     } catch (error) {
@@ -38,27 +46,45 @@ const logoutClient = async (req, res) => {
     if (!userId) {
         return res.status(400).json({ message: 'User not authenticated' });
     }
+
+    if (isDisconnecting(userId)) {
+        console.log('⚠️ Logout already in progress');
+        return res.status(202).json({ message: 'Logout already in progress' });
+    }
+
     const active = await isSessionActive(userId);
+    console.log('🔍 isSessionActive result:', active);
 
     if (!active) {
+        console.log('⚠️ Client already logged out or session invalid');
         return res.status(200).json({ message: 'Client already logged out' });
     }
 
+    addDisconnectingClient(userId);
+
     try {
+        console.log('✅ Logging out the client');
         await cleanupClient(userId);
         res.status(200).json({ message: 'Logged out successfully' });
     } catch (error) {
         console.error('❌ Logout error:', error);
         res.status(500).json({ message: 'Failed to logout client' });
+    } finally {
+        removeDisconnectingClient(userId);
     }
 };
 
-// Cancel initialization process and cleanup
 const cancelClientInit = async (req, res) => {
     const userId = req.user?.id;
     if (!userId) {
         return res.status(400).json({ message: 'User not authenticated' });
     }
+
+    if (isDisconnecting(userId)) {
+        return res.status(202).json({ message: 'Client logout already in progress' });
+    }
+
+    addDisconnectingClient(userId);
 
     try {
         await cleanupClient(userId);
@@ -67,6 +93,8 @@ const cancelClientInit = async (req, res) => {
     } catch (error) {
         console.error('❌ Cancel Init error:', error);
         res.status(500).json({ message: 'Failed to cancel client initialization' });
+    } finally {
+        removeDisconnectingClient(userId);
     }
 };
 

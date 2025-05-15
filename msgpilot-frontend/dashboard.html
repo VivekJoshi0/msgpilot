@@ -166,7 +166,8 @@
     </div>
     <!-- Loader Modal -->
     <div id="loaderModal" class="fixed inset-0 modal-bg flex items-center justify-center z-50 hidden">
-        <div class="bg-gray-900 rounded-2xl p-10 w-full max-w-md text-center text-white shadow-2xl relative fade-slide">
+        <div id="loaderContent"
+            class="bg-gray-900 rounded-2xl p-10 w-full max-w-md text-center text-white shadow-2xl relative fade-slide">
             <!-- Circular SVG Loader -->
             <div class="loader w-20 h-20 mx-auto mb-6 relative" id="circularLoader">
                 <svg viewBox="0 0 100 100">
@@ -233,8 +234,13 @@
         });
 
         const getUserIdFromSession = () => {
-            const token = localStorage.getItem('authToken');
-            return token ? JSON.parse(atob(token.split('.')[1])).id : 'demoUser';
+            try {
+                const token = localStorage.getItem('authToken');
+                return token ? JSON.parse(atob(token.split('.')[1])).id : 'demoUser';
+            } catch (e) {
+                console.warn('Invalid token:', e);
+                return 'demoUser';
+            }
         };
 
         const userId = getUserIdFromSession();
@@ -248,22 +254,69 @@
             loaderStatus.textContent = message;
             loaderStatus.classList.add('loader-dots');
             loaderModal.classList.remove('hidden');
+            loaderModal.classList.add('flex');
             qrImage.classList.add('hidden');
             document.getElementById('circularLoader').style.display = 'block';
         }
 
+        let qrTimeout;
+        let countdownInterval;
+        let userInitiatedCancel = false; // Track if user cancels manually
+        let timeoutValue = 60000; // Default timeout (1 minute) in case no value is sent from backend
+        let isConnected = false;
+        let cancelCalled = false;
+
+        // Socket event listener for QR code and timeout value
+        socket.on('whatsapp:qr', (data) => {
+            const { qrCode, qrImage, timeoutValue: newTimeoutValue } = data;
+
+            // Update the timeout value from backend if it's provided
+            if (newTimeoutValue) {
+                timeoutValue = newTimeoutValue;
+            }
+
+            // Show QR code
+            showQR({ qrImage });
+        });
+
+        // Function to show QR and handle countdown
         function showQR(qrData) {
             loaderStatus.classList.remove('loader-dots');
             loaderStatus.textContent = 'Scan the QR Code to connect your device 📱';
-            qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qrData)}&size=300x300`;
+            qrImage.src = qrData.qrImage;
             qrImage.classList.remove('hidden');
             document.getElementById('circularLoader').style.display = 'none';
+
+            // Countdown Timer
+            let countdownEl = document.getElementById('qrCountdown');
+            if (!countdownEl) {
+                countdownEl = document.createElement('div');
+                countdownEl.id = 'qrCountdown';
+                countdownEl.className = 'text-sm text-gray-400 mt-2';
+                document.getElementById('loaderContent').appendChild(countdownEl);
+            }
+
+            let timeLeft = timeoutValue / 1000; // Convert milliseconds to seconds
+            countdownEl.textContent = `QR expires in ${timeLeft} seconds`;
+
+            clearInterval(countdownInterval);
+            clearTimeout(qrTimeout);
+
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                countdownEl.textContent = `QR expires in ${timeLeft} seconds`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownEl.textContent = 'QR expired ⌛';
+                }
+            }, 1000);
         }
 
-        async function closeModal() {
-            loaderModal.classList.add('hidden');
-
-            // Cancel init session
+        // Function to cancel initialization (this will be used when user manually cancels or on page refresh)
+        async function cancelInitSession() {
+            if (cancelCalled) return; // prevent multiple calls
+            cancelCalled = true;
             try {
                 await fetch('http://localhost:5001/api/whatsapp/cancel-init', {
                     method: 'POST',
@@ -279,22 +332,32 @@
         }
 
 
+        function closeModal() {
+            userInitiatedCancel = true;
+            clearTimeout(qrTimeout);
+            clearInterval(countdownInterval);
+            loaderModal.classList.add('hidden');
+            loaderModal.classList.remove('flex');
+            cancelInitSession();
+        }
+
         socket.on('connect', () => {
             console.log('🔌 Connected to Socket.IO server');
             socket.emit('join', userId);
         });
 
         socket.on('whatsapp:initializing', () => {
-            showModal('Initializing WhatsApp client...');
+            showModal('Initializing WhatsApp...');
         });
 
         socket.on('whatsapp:connected', () => {
+            isConnected = true;
             showModal('Whatsapp already logged in');
             setTimeout(() => window.location.href = 'send.html', 2000);
         });
 
         socket.on('whatsapp:ready', () => {
-            showModal('WhatsApp client is ready');
+            showModal('WhatsApp is ready');
             setTimeout(() => window.location.href = 'send.html', 2000);
         });
 
@@ -304,6 +367,19 @@
 
         socket.on('whatsapp:qr', (qrData) => {
             showQR(qrData);
+        });
+
+        socket.on('whatsapp:timeout', () => {
+            showModal('⏰ QR Code expired. Please try again.');
+            setTimeout(() => {
+                window.location.reload(); // or allow them to click and retry
+            }, 3000);
+        });
+
+        window.addEventListener('beforeunload', async () => {
+            if (!isConnected) {
+                await cancelInitSession();
+            }
         });
 
     </script>
